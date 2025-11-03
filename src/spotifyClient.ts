@@ -42,7 +42,7 @@ const getRefreshToken = async (): Promise<string | null> => {
     localStorage.removeItem("spotify_token");
     localStorage.removeItem("refresh_token");
     window.location.href = "/"; // Redirige al login
-    return null;
+    throw new Error("Could not refresh token.");
   }
 };
 
