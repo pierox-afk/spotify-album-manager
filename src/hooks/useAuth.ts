@@ -12,7 +12,7 @@ export const redirectToSpotifyAuth = async () => {
 
   localStorage.setItem("verifier", verifier);
 
-  const redirectUri = import.meta.env.VITE_REDIRECT_URI;
+  const redirectUri = `${window.location.origin}/callback`;
   console.log("Redirect URI:", redirectUri);
 
   const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
@@ -36,7 +36,7 @@ export const getAccessToken = async (code: string): Promise<string | null> => {
   }
 
   const TOKEN_ENDPOINT = "https://accounts.spotify.com/api/token";
-  const redirectUri = import.meta.env.VITE_REDIRECT_URI;
+  const redirectUri = `${window.location.origin}/callback`;
 
   const params = new URLSearchParams({
     client_id: import.meta.env.VITE_SPOTIFY_CLIENT_ID,
