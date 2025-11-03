@@ -6,14 +6,15 @@ const SCOPES = [
   "user-library-modify",
 ];
 
+const getRedirectUri = () => "https://spoty-app-aprz.vercel.app/callback";
+
 export const redirectToSpotifyAuth = async () => {
   const verifier = generateCodeVerifier(128);
   const challenge = await generateCodeChallenge(verifier);
 
   localStorage.setItem("verifier", verifier);
 
-  const redirectUri = `${window.location.origin}/callback`;
-  console.log("Redirect URI:", redirectUri);
+  const redirectUri = getRedirectUri();
 
   const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
   const params = new URLSearchParams({
@@ -36,7 +37,7 @@ export const getAccessToken = async (code: string): Promise<string | null> => {
   }
 
   const TOKEN_ENDPOINT = "https://accounts.spotify.com/api/token";
-  const redirectUri = `${window.location.origin}/callback`;
+  const redirectUri = getRedirectUri();
 
   const params = new URLSearchParams({
     client_id: import.meta.env.VITE_SPOTIFY_CLIENT_ID,
