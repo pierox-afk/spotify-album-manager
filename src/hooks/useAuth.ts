@@ -58,10 +58,13 @@ export function redirectToSpotifyAuth(): void {
 
 /**
  * Intercambia el `code` recibido en la callback por tokens.
- * Nota: este ejemplo asume que tienes un backend en /api/auth/token que hace
- * el intercambio seguro con el client_secret. Si no, ajusta la URL según tu backend.
+ * Devuelve el objeto con access_token, refresh_token y expires_in para permitir comprobaciones.
  */
-export async function getAccessToken(code: string): Promise<void> {
+export async function getAccessToken(code: string): Promise<{
+  access_token: string;
+  refresh_token?: string;
+  expires_in?: number;
+} | null> {
   const redirect_uri = getRedirectUri();
 
   const resp = await fetch("/api/auth/token", {
@@ -90,6 +93,8 @@ export async function getAccessToken(code: string): Promise<void> {
     const expiry = Date.now() + Number(expires_in) * 1000;
     localStorage.setItem("spotify_token_expiry", expiry.toString());
   }
+
+  return { access_token, refresh_token, expires_in };
 }
 
 /**
