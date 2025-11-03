@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = useCallback(() => {
     localStorage.removeItem("spotify_token");
+    localStorage.removeItem("refresh_token");
     localStorage.removeItem("verifier");
     setToken(null);
     window.location.href = "/";

@@ -1,5 +1,7 @@
 const BASE_URL = "https://api.spotify.com/v1";
 
+const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
+
 const getRefreshToken = async (): Promise<string | null> => {
   const refreshToken = localStorage.getItem("refresh_token");
   if (!refreshToken) {
@@ -11,13 +13,15 @@ const getRefreshToken = async (): Promise<string | null> => {
   const params = new URLSearchParams({
     grant_type: "refresh_token",
     refresh_token: refreshToken,
-    client_id: import.meta.env.VITE_SPOTIFY_CLIENT_ID,
+    client_id: CLIENT_ID,
   });
 
   try {
     const response = await fetch(TOKEN_ENDPOINT, {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
       body: params,
     });
 
