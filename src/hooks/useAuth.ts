@@ -30,9 +30,13 @@ function generateRandomString(length = 16) {
 }
 
 export function getRedirectUri(): string {
-  const envUri = import.meta.env.VITE_REDIRECT_URI;
-  const fallback = `${window.location.origin}/callback`;
-  return (envUri ?? fallback).toString();
+  const redirectUri = import.meta.env.VITE_REDIRECT_URI;
+  if (!redirectUri) {
+    throw new Error(
+      "VITE_REDIRECT_URI is not set. Please check your .env file."
+    );
+  }
+  return redirectUri;
 }
 
 /**
@@ -41,6 +45,7 @@ export function getRedirectUri(): string {
  */
 export function redirectToSpotifyAuth(): void {
   const redirectUri = getRedirectUri();
+  localStorage.setItem("debug_redirect_uri", redirectUri); // <-- Añado esto para depurar
   const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID ?? "";
   const state = generateRandomString(16);
   localStorage.setItem(STORAGE_STATE_KEY, state);
