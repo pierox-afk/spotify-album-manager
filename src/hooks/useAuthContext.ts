@@ -1,12 +1,9 @@
 import { createContext, useContext } from "react";
 
-import { type TokenData } from "./useAuth";
-
 export interface AuthContextType {
   token: string | null;
-  login: (tokenData: TokenData) => void;
+  login: (token: string) => void;
   logout: () => void;
-  spotifyFetch: <T>(endpoint: string, options?: RequestInit) => Promise<T>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(

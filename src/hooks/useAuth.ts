@@ -4,7 +4,6 @@ const SCOPES = [
   "user-read-private",
   "user-library-read",
   "user-library-modify",
-  "offline_access",
 ];
 
 export const redirectToSpotifyAuth = async () => {
@@ -30,15 +29,7 @@ export const redirectToSpotifyAuth = async () => {
   window.location.href = `${AUTH_ENDPOINT}?${params.toString()}`;
 };
 
-export interface TokenData {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
-}
-
-export const getAccessToken = async (
-  code: string
-): Promise<TokenData | null> => {
+export const getAccessToken = async (code: string): Promise<string | null> => {
   const verifier = localStorage.getItem("verifier");
   if (!verifier) {
     throw new Error("Code verifier not found!");
@@ -69,49 +60,8 @@ export const getAccessToken = async (
       );
     }
 
-    const { access_token, refresh_token, expires_in } = await response.json();
-    return {
-      accessToken: access_token,
-      refreshToken: refresh_token,
-      expiresIn: expires_in,
-    };
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-};
-
-export const refreshAccessToken = async (
-  refreshToken: string
-): Promise<TokenData | null> => {
-  const TOKEN_ENDPOINT = "https://accounts.spotify.com/api/token";
-
-  const params = new URLSearchParams({
-    client_id: import.meta.env.VITE_SPOTIFY_CLIENT_ID,
-    grant_type: "refresh_token",
-    refresh_token: refreshToken,
-  });
-
-  try {
-    const response = await fetch(TOKEN_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: params,
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(
-        `Failed to refresh access token: ${errorData.error_description}`
-      );
-    }
-
-    const { access_token, refresh_token, expires_in } = await response.json();
-    return {
-      accessToken: access_token,
-      refreshToken: refresh_token,
-      expiresIn: expires_in,
-    };
+    const { access_token } = await response.json();
+    return access_token;
   } catch (error) {
     console.error(error);
     return null;
