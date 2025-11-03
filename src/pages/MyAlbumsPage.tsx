@@ -27,8 +27,10 @@ export default function MyAlbumsPage() {
           "/me/albums?limit=50",
           token
         );
-        const savedAlbums = data.items.map((item) => item.album);
-        setAlbums(savedAlbums);
+        if (data) {
+          const savedAlbums = data.items.map((item) => item.album);
+          setAlbums(savedAlbums);
+        }
       } catch (err) {
         const message = err instanceof Error ? err.message : "Unknown error";
         setError(message);
