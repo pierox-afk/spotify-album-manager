@@ -18,7 +18,7 @@ interface Playlist {
 }
 
 import "../components/Page.css";
-import "./MyAlbumsPage.css";
+import "./MyAlbumsPage.css"; // Asegúrate de que este archivo exista y contenga los estilos del modal
 
 export default function MyAlbums() {
   const { token, logout } = useAuthContext();
