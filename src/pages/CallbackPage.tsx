@@ -21,7 +21,7 @@ const CallbackPage = () => {
         try {
           const token = await getAccessToken(code);
           if (token) {
-            login(token);
+            login(token.access_token);
             navigate("/search", { replace: true });
           } else {
             throw new Error("Token was not received.");
