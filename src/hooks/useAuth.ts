@@ -4,6 +4,7 @@ const SCOPES = [
   "user-read-private",
   "user-library-read",
   "user-library-modify",
+  "user-read-email",
 ];
 
 const getRedirectUri = () =>
@@ -73,51 +74,5 @@ export const getAccessToken = async (code: string): Promise<string | null> => {
   } catch (error) {
     console.error(error);
     return null;
-  }
-};
-
-/**
- * Asegura que el redirect URI usado en el flujo OAuth
- * sea consistente con la variable de entorno VITE_REDIRECT_URI
- * o con window.location.origin + '/callback' como fallback.
- */
-const getRedirectUri = () =>
-  import.meta.env.VITE_REDIRECT_URI ?? `${window.location.origin}/callback`;
-
-// Reemplazar donde se construye la URL de autorización para usar getRedirectUri()
-const redirectToSpotifyAuth = () => {
-  const redirectUri = getRedirectUri();
-  const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-  const scope = [
-    "user-library-read",
-    "user-library-modify",
-    "user-read-email",
-    // ...otros scopes si aplica
-  ].join(" ");
-  const state = generateRandomString(16); // ...existing helper...
-  localStorage.setItem("spotify_auth_state", state);
-  const authUrl =
-    "https://accounts.spotify.com/authorize" +
-    `?response_type=code` +
-    `&client_id=${encodeURIComponent(clientId!)}` +
-    `&scope=${encodeURIComponent(scope)}` +
-    `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-    `&state=${encodeURIComponent(state)}`;
-  window.location.href = authUrl;
-};
-
-// En el intercambio de código por token (getAccessToken / handleCallback)
-// asegurarse de incluir redirect_uri y manejar errores borrando tokens inválidos:
-const exchangeCodeForToken = async (code: string) => {
-  const redirectUri = getRedirectUri();
-  try {
-    // ...existing code que hace fetch al backend o a Spotify...
-    // En el body o params de intercambio incluir redirect_uri=redirectUri
-  } catch (err) {
-    // Si falla el intercambio borra posibles tokens corruptos
-    localStorage.removeItem("spotify_token");
-    localStorage.removeItem("spotify_refresh_token");
-    localStorage.removeItem("spotify_token_expiry");
-    throw err;
   }
 };
