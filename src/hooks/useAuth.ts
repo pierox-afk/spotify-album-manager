@@ -61,8 +61,11 @@ export const getAccessToken = async (code: string): Promise<string | null> => {
       );
     }
 
-    const { access_token } = await response.json();
-    return access_token;
+    const { access_token, refresh_token } = await response.json();
+    if (refresh_token) {
+      localStorage.setItem("refresh_token", refresh_token);
+    }
+    return access_token; // Solo devolvemos el access_token por compatibilidad
   } catch (error) {
     console.error(error);
     return null;
