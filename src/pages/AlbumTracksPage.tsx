@@ -53,8 +53,10 @@ export default function AlbumTracksPage() {
               "Tu email no está autorizado para usar esta aplicación."
             )
         );
-        console.log("Tracks data:", tracksData.items[0]); // Debug first track
-        setTracks(tracksData.items);
+        if (tracksData) {
+          console.log("Tracks data:", tracksData.items[0]); // Debug first track
+          setTracks(tracksData.items);
+        }
       } catch (err: unknown) {
         if (err instanceof Error) {
           setError(err.message);

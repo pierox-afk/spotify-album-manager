@@ -69,7 +69,9 @@ export default function CustomAlbumDetailPage() {
           endpoint,
           token
         );
-        setSearchResults(data.tracks.items);
+        if (data) {
+          setSearchResults(data.tracks.items);
+        }
       } catch (error) {
         console.error("Error searching tracks:", error);
         setSearchResults([]);

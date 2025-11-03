@@ -62,39 +62,43 @@ export default function SearchPage() {
             )
         );
 
-        const albumIds = data.albums.items.map((album) => album.id);
-        if (albumIds.length > 0) {
-          const checkSavedEndpoint = `/me/albums/contains?ids=${albumIds.join(
-            ","
-          )}`;
-          const savedStatus = await spotifyFetch<boolean[]>(
-            checkSavedEndpoint,
-            token,
-            {},
-            () =>
-              showModal(
-                "Acceso Denegado",
-                "Tu email no está autorizado para usar esta aplicación."
-              )
-          );
-          const newSavedAlbumIds = new Set(savedAlbumIds);
-          let added = false;
-          savedStatus.forEach((isSaved, index) => {
-            if (isSaved && !newSavedAlbumIds.has(albumIds[index])) {
-              newSavedAlbumIds.add(albumIds[index]);
-              added = true;
+        if (data) {
+          const albumIds = data.albums.items.map((album) => album.id);
+          if (albumIds.length > 0) {
+            const checkSavedEndpoint = `/me/albums/contains?ids=${albumIds.join(
+              ","
+            )}`;
+            const savedStatus = await spotifyFetch<boolean[]>(
+              checkSavedEndpoint,
+              token,
+              {},
+              () =>
+                showModal(
+                  "Acceso Denegado",
+                  "Tu email no está autorizado para usar esta aplicación."
+                )
+            );
+            if (savedStatus) {
+              const newSavedAlbumIds = new Set(savedAlbumIds);
+              let added = false;
+              savedStatus.forEach((isSaved, index) => {
+                if (isSaved && !newSavedAlbumIds.has(albumIds[index])) {
+                  newSavedAlbumIds.add(albumIds[index]);
+                  added = true;
+                }
+              });
+              if (added) setSavedAlbumIds(newSavedAlbumIds);
             }
-          });
-          if (added) setSavedAlbumIds(newSavedAlbumIds);
-        }
+          }
 
-        if (data.albums.items.length === 0) {
-          setNoResults(true);
-          setAlbums([]);
-          setTotalPages(1);
-        } else {
-          setAlbums(data.albums.items);
-          setTotalPages(Math.ceil(data.albums.total / limit));
+          if (data.albums.items.length === 0) {
+            setNoResults(true);
+            setAlbums([]);
+            setTotalPages(1);
+          } else {
+            setAlbums(data.albums.items);
+            setTotalPages(Math.ceil(data.albums.total / limit));
+          }
         }
       } catch (err: unknown) {
         if (err instanceof Error) {

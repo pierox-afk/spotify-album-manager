@@ -30,7 +30,9 @@ export default function AlbumPage() {
           `/albums/${id}/tracks`,
           token
         );
-        setTracks(tracksData.items);
+        if (tracksData) {
+          setTracks(tracksData.items);
+        }
       } catch (err) {
         setError("No se pudieron cargar los detalles del álbum.");
         console.error(err);

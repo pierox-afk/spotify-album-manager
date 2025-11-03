@@ -51,9 +51,11 @@ export default function MyAlbums() {
           "Tu email no está autorizado para usar esta aplicación."
         )
       );
-      const savedAlbums = data.items.map((item) => item.album);
-      setAlbums((prev) => [...prev, ...savedAlbums]);
-      setNextUrl(data.next);
+      if (data) {
+        const savedAlbums = data.items.map((item) => item.album);
+        setAlbums((prev) => [...prev, ...savedAlbums]);
+        setNextUrl(data.next);
+      }
     } catch (err: unknown) {
       const error = err as Error;
       setError(error.message);
@@ -79,13 +81,15 @@ export default function MyAlbums() {
       try {
         const data = await spotifyFetch<{
           items: { track: { album: Album } }[];
-        }>("/me/tracks?limit=50", token);
-        const albums = data.items.map((item) => item.track.album);
-        const uniqueAlbums = albums.filter(
-          (album, index, self) =>
-            self.findIndex((a) => a.id === album.id) === index
-        );
-        setLikedAlbums(uniqueAlbums);
+        }>("/me/tracks?limit=50", token, {});
+        if (data) {
+          const albums = data.items.map((item) => item.track.album);
+          const uniqueAlbums = albums.filter(
+            (album, index, self) =>
+              self.findIndex((a) => a.id === album.id) === index
+          );
+          setLikedAlbums(uniqueAlbums);
+        }
       } catch (error) {
         console.error("Error fetching liked albums:", error);
       }
@@ -104,8 +108,10 @@ export default function MyAlbums() {
             images: { url: string }[];
             tracks: { total: number };
           }[];
-        }>("/me/playlists?limit=50", token);
-        setPlaylists(data.items);
+        }>("/me/playlists?limit=50", token, {});
+        if (data) {
+          setPlaylists(data.items);
+        }
       } catch (error) {
         console.error("Error fetching playlists:", error);
       }
