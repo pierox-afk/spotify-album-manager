@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
 
+async function generateCodeChallenge(codeVerifier: string) {
+  const data = new TextEncoder().encode(codeVerifier);
+  const digest = await window.crypto.subtle.digest("SHA-256", data);
+  return btoa(String.fromCharCode.apply(null, [...new Uint8Array(digest)]))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
 const SCOPES = [
   "user-library-read",
   "user-library-modify",
@@ -9,6 +17,7 @@ const SCOPES = [
 const STORAGE_TOKEN_KEY = "spotify_token";
 const STORAGE_REFRESH_KEY = "spotify_refresh_token";
 const STORAGE_STATE_KEY = "spotify_auth_state";
+const STORAGE_VERIFIER_KEY = "spotify_code_verifier";
 
 function generateRandomString(length = 16) {
   const chars =
@@ -30,25 +39,24 @@ function generateRandomString(length = 16) {
 }
 
 export function getRedirectUri(): string {
-  const redirectUri = "https://spoty-app-aprz.vercel.app/callback";
-  if (!redirectUri) {
-    throw new Error(
-      "VITE_REDIRECT_URI is not set. Please check your .env file."
-    );
-  }
-  return redirectUri;
+  // Esto asegura que la URI sea correcta tanto en local como en producción.
+  return `${window.location.origin}/callback`;
 }
 
 /**
  * Lanza al flujo de autorización de Spotify.
  * Asegúrate de que getRedirectUri() esté registrada exactamente en Spotify Dashboard.
  */
-export function redirectToSpotifyAuth(): void {
+export async function redirectToSpotifyAuth(): Promise<void> {
   const redirectUri = getRedirectUri();
-  localStorage.setItem("debug_redirect_uri", redirectUri); // <-- Añado esto para depurar
   const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID ?? "";
   const state = generateRandomString(16);
+  const codeVerifier = generateRandomString(128);
+  const codeChallenge = await generateCodeChallenge(codeVerifier);
+
   localStorage.setItem(STORAGE_STATE_KEY, state);
+  localStorage.setItem(STORAGE_VERIFIER_KEY, codeVerifier);
+  localStorage.setItem("debug_redirect_uri", redirectUri); // Para depurar
 
   const authUrl =
     "https://accounts.spotify.com/authorize" +
@@ -56,7 +64,9 @@ export function redirectToSpotifyAuth(): void {
     `&client_id=${encodeURIComponent(clientId)}` +
     `&scope=${encodeURIComponent(SCOPES)}` +
     `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-    `&state=${encodeURIComponent(state)}`;
+    `&state=${encodeURIComponent(state)}` +
+    `&code_challenge_method=S256` +
+    `&code_challenge=${codeChallenge}`;
 
   window.location.href = authUrl;
 }
@@ -70,12 +80,26 @@ export async function getAccessToken(code: string): Promise<{
   refresh_token?: string;
   expires_in?: number;
 } | null> {
-  const redirect_uri = getRedirectUri();
+  const codeVerifier = localStorage.getItem(STORAGE_VERIFIER_KEY);
+  if (!codeVerifier) {
+    throw new Error(
+      "Code verifier no encontrado. El flujo de autenticación es inválido."
+    );
+  }
 
-  const resp = await fetch("/api/auth/token", {
+  const redirectUri = getRedirectUri();
+  const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID ?? "";
+
+  const resp = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ code, redirect_uri }),
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: clientId,
+      grant_type: "authorization_code",
+      code,
+      redirect_uri: redirectUri,
+      code_verifier: codeVerifier,
+    }),
   });
 
   if (!resp.ok) {
@@ -120,6 +144,7 @@ export function useAuthContext() {
     localStorage.removeItem(STORAGE_TOKEN_KEY);
     localStorage.removeItem(STORAGE_REFRESH_KEY);
     localStorage.removeItem(STORAGE_STATE_KEY);
+    localStorage.removeItem(STORAGE_VERIFIER_KEY);
     localStorage.removeItem("spotify_token_expiry");
     setToken(null);
   };

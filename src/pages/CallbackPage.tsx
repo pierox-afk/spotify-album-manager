@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAccessToken, getRedirectUri } from "../hooks/useAuth";
+import { getAccessToken } from "../hooks/useAuth";
 import { useAuthContext } from "../hooks/useAuthContext";
 
 const CallbackPage = () => {
@@ -16,18 +16,6 @@ const CallbackPage = () => {
 
     if (error) {
       setDebugInfo(`Error de Spotify: ${error}`);
-      return;
-    }
-
-    const storedRedirectUri = localStorage.getItem("debug_redirect_uri");
-    const currentRedirectUri = getRedirectUri();
-
-    if (storedRedirectUri !== currentRedirectUri) {
-      setDebugInfo(
-        `¡ERROR DE REDIRECCIÓN! Las URLs no coinciden:\n\n` +
-          `URL al iniciar sesión:\n${storedRedirectUri}\n\n` +
-          `URL en la página de callback:\n${currentRedirectUri}`
-      );
       return;
     }
 
