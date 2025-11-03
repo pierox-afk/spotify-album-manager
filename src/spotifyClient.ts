@@ -2,6 +2,8 @@ const BASE_URL = "https://api.spotify.com/v1";
 
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
 
+const getRedirectUri = () => `${window.location.origin}/callback`;
+
 const getRefreshToken = async (): Promise<string | null> => {
   const refreshToken = localStorage.getItem("refresh_token");
   if (!refreshToken) {
@@ -14,6 +16,7 @@ const getRefreshToken = async (): Promise<string | null> => {
     grant_type: "refresh_token",
     refresh_token: refreshToken,
     client_id: CLIENT_ID,
+    redirect_uri: getRedirectUri(), // Añadido para consistencia
   });
 
   try {

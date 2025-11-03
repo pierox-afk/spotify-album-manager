@@ -6,16 +6,7 @@ const SCOPES = [
   "user-library-modify",
 ];
 
-const getRedirectUri = () => {
-  // This makes the redirect URI dynamic.
-  // In development, it will be like 'http://localhost:5173/callback'
-  // In production, it will be 'https://your-app.vercel.app/callback'
-  // It must match exactly what you have in your Spotify Developer Dashboard.
-  const { protocol, hostname, port } = window.location;
-  const host = hostname === "127.0.0.1" ? "localhost" : hostname;
-  const portString = port ? `:${port}` : "";
-  return `${protocol}//${host}${portString}/callback`;
-};
+const getRedirectUri = () => `${window.location.origin}/callback`;
 
 export const redirectToSpotifyAuth = async () => {
   const verifier = generateCodeVerifier(128);
