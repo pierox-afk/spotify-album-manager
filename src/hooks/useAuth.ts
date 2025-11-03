@@ -30,7 +30,7 @@ function generateRandomString(length = 16) {
 }
 
 export function getRedirectUri(): string {
-  const redirectUri = import.meta.env.VITE_REDIRECT_URI;
+  const redirectUri = "https://spoty-app-aprz.vercel.app/callback";
   if (!redirectUri) {
     throw new Error(
       "VITE_REDIRECT_URI is not set. Please check your .env file."
