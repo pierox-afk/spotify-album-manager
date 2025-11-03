@@ -2,7 +2,8 @@ const BASE_URL = "https://api.spotify.com/v1";
 
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
 
-const getRedirectUri = () => `${window.location.origin}/callback`;
+export const getRedirectUri = () =>
+  import.meta.env.VITE_REDIRECT_URI ?? `${window.location.origin}/callback`;
 
 const getRefreshToken = async (): Promise<string | null> => {
   const refreshToken = localStorage.getItem("refresh_token");
@@ -49,51 +50,50 @@ const getRefreshToken = async (): Promise<string | null> => {
   }
 };
 
-export const spotifyFetch = async <T>(
+/**
+ * Wrapper para llamadas a la API de Spotify que detecta 401 (token inválido/expirado)
+ * y limpia tokens locales lanzando un error con mensaje claro.
+ */
+export async function spotifyFetch<T>(
   endpoint: string,
-  token: string,
+  token: string | null,
   options: RequestInit = {},
   onUnauthorized?: () => void
-): Promise<T | null> => {
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
+): Promise<T | null> {
+  if (!token) {
+    throw new Error("Token de Spotify inválido o expirado");
+  }
+
+  const res = await fetch(`https://api.spotify.com/v1${endpoint}`, {
     ...options,
     headers: {
-      ...options.headers,
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
+      ...(options.headers || {}),
     },
   });
 
-  if (!response.ok) {
-    if (response.status === 401) {
-      const newToken = await getRefreshToken();
-      if (newToken) {
-        // Reintenta la llamada con el nuevo token
-        return spotifyFetch(endpoint, newToken, options, onUnauthorized);
-      } else {
-        throw new Error("Token de Spotify inválido o expirado.");
-      }
+  if (res.status === 401) {
+    // limpiar tokens y notificar al caller
+    localStorage.removeItem("spotify_token");
+    localStorage.removeItem("spotify_refresh_token");
+    localStorage.removeItem("spotify_token_expiry");
+    if (typeof onUnauthorized === "function") onUnauthorized();
+    throw new Error("Token de Spotify inválido o expirado");
+  }
+
+  if (!res.ok) {
+    const text = await res.text();
+    // Intenta parsear JSON con mensaje de Spotify
+    try {
+      const json = JSON.parse(text);
+      const msg = json.error?.message ?? JSON.stringify(json);
+      throw new Error(msg);
+    } catch {
+      throw new Error(text || "Error desconocido en la API de Spotify");
     }
-    if (response.status === 403) {
-      onUnauthorized?.();
-      throw new Error("Usuario no autorizado para usar esta aplicación.");
-    }
-    const errorData = await response.json();
-    throw new Error(
-      `Error de la API de Spotify: ${
-        errorData.error.message || response.statusText
-      }`
-    );
   }
 
-  if (response.status === 204) {
-    return null as T;
-  }
-
-  const method = options.method?.toUpperCase();
-  if ((method === "PUT" || method === "DELETE") && response.ok) {
-    return null as T;
-  }
-
-  return response.json();
-};
+  const data = await res.json();
+  return data as T;
+}
