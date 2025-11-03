@@ -65,7 +65,10 @@ export const getAccessToken = async (code: string): Promise<string | null> => {
     if (refresh_token) {
       localStorage.setItem("refresh_token", refresh_token);
     }
-    return access_token; // Solo devolvemos el access_token por compatibilidad
+    if (access_token) {
+      localStorage.setItem("spotify_token", access_token);
+    }
+    return access_token;
   } catch (error) {
     console.error(error);
     return null;

@@ -31,6 +31,7 @@ const getRefreshToken = async (): Promise<string | null> => {
 
     const { access_token, refresh_token: newRefreshToken } =
       await response.json();
+    console.log("Token refreshed. New access token received.");
     localStorage.setItem("spotify_token", access_token);
     if (newRefreshToken) {
       localStorage.setItem("refresh_token", newRefreshToken);
