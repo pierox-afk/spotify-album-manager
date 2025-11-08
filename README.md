@@ -126,6 +126,11 @@ La aplicación utiliza los siguientes endpoints de la API de Spotify:
 - `PUT /me/albums` - Guardar álbum
 - `DELETE /me/albums` - Eliminar álbum
 - `GET /me/albums/contains` - Verificar si álbum está guardado
+![WhatsApp Image 2025-11-07 at 20 05 00_e4eb4d8b](https://github.com/user-attachments/assets/f5dde567-de9c-4a91-b56d-4ec346b2ffca)
+![WhatsApp Image 2025-11-07 at 20 05 18_6023b751](https://github.com/user-attachments/assets/38609a59-b4ef-4284-8437-6351cc010bf9)
+![WhatsApp Image 2025-11-07 at 20 05 44_ccbf1018](https://github.com/user-attachments/assets/4737c04c-994e-4183-b54c-3a81358e4c1d)
+![WhatsApp Image 2025-11-07 at 20 05 59_0a51e4f1](https://github.com/user-attachments/assets/6648770a-c565-4095-8cf7-8a0e88a10a8c)
+
 
 ## Contribución
 
